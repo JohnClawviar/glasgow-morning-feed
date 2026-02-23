@@ -37,7 +37,9 @@ async function fetchWeather() {
   const lat = 55.8642;
   const lon = -4.2518;
   
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=relative_humidity_2m,windspeed_10m&timezone=Europe/London&forecast_days=5`;
+  // Use &current=... instead of older &current_weather=true
+  // This gets current values directly
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe/London&forecast_days=5`;
   
   try {
     const response = await fetch(url, { mode: 'cors' });
@@ -55,25 +57,23 @@ function getWeatherInfo(code) {
 }
 
 function updateWeatherUI(data) {
-  const current = data.current_weather;
+  const current = data.current; // access through 'current' object
   const daily = data.daily;
-  const hourly = data.hourly;
   
-  // Get current hour humidity
-  const currentHour = new Date().getHours();
-  const humidityData = hourly.relative_humidity_2m || [];
-  const humidity = humidityData[currentHour * 4] || humidityData[0] || 75; // rough estimate
+  const humidity = current.relative_humidity_2m;
+  const temp = Math.round(current.temperature_2m);
+  const wind = Math.round(current.wind_speed_10m);
   
   // Get current weather info
-  const weatherInfo = getWeatherInfo(current.weathercode);
+  const weatherInfo = getWeatherInfo(current.weather_code);
   const iconUrl = `https://openweathermap.org/img/wn/${weatherInfo.icon}@2x.png`;
   
   // Update main weather display
-  document.getElementById('main-temp').textContent = Math.round(current.temperature);
+  document.getElementById('main-temp').textContent = temp;
   document.getElementById('main-icon').src = iconUrl;
   document.getElementById('main-icon').alt = weatherInfo.label;
   document.getElementById('weather-desc').textContent = weatherInfo.label;
-  document.getElementById('wind-speed').textContent = `${Math.round(current.windspeed)} km/h`;
+  document.getElementById('wind-speed').textContent = `${wind} km/h`;
   document.getElementById('humidity').textContent = `${Math.round(humidity)}%`;
   
   // Update date
@@ -91,7 +91,7 @@ function updateWeatherUI(data) {
   const today = now.getDay();
   
   for (let i = 0; i < 5; i++) {
-    const dayCode = daily.weathercode[i];
+    const dayCode = daily.weather_code[i];
     const maxTemp = Math.round(daily.temperature_2m_max[i]);
     const minTemp = Math.round(daily.temperature_2m_min[i]);
     const dayInfo = getWeatherInfo(dayCode);
