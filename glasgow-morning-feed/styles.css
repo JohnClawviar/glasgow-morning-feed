@@ -1,8 +1,0 @@
-:root{--bg:#0b1020;--fg:#e8e1ff;--card:#1a1f2e;--accent:#5bd2ff}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:system-ui, -apple-system, Segoe UI, Roboto}
-.body{background:var(--bg);color:var(--fg)}
-.container{max-width:800px;margin:40px auto;padding:20px}
-.card{background:var(--card);color:var(--fg);border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
-.card h2{margin:0 0 8px}
-.card .temp{font-feature-settings:"tnum" 1}
