@@ -3,66 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title Glasgow Morning Feed</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Glasgow Morning Feed</title>
+  <style>
+    :root{--bg:#0b1020;--fg:#e8e1ff;--card:#1a1f2e}
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui, -apple-system, sans-serif}
+    .container{max-width:800px;margin:40px auto;padding:20px}
+    .card{background:var(--card);border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+  </style>
 </head>
 <body>
-  <div id="feed" class="container" aria-label="Glasgow morning feed"></div>
+  <div id="feed" class="container">
+    <div class="card">
+      <h2>Glasgow Feed</h2>
+      <p id="weather-text">Connecting to weather services...</p>
+    </div>
+  </div>
   <script>
-  (function(){
-    const container = document.getElementById('feed');
-    if(!container) return;
-    function renderCard(title, text){
-      container.innerHTML = `<div class=\"card\"><h2>${title}</h2><p>${text}</p></div>`;
-    }
-    renderCard('Weather in Glasgow, Scotland','Loading weather...');
-
-    const lat = 55.864239;
-    const lon = -4.251835;
-    const urlOpenMeteo = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`;
-    function codeToDesc(code){
-      if(code===0) return 'Clear';
-      if(code===1) return 'Mainly Clear';
-      if(code===2) return 'Partly Cloudy';
-      if(code===3) return 'Overcast';
-      if(code>=45 && code<=48) return 'Fog';
-      if(code>=51 && code<=57) return 'Drizzle';
-      if(code>=61 && code<=67) return 'Rain';
-      if(code>=80 && code<=82) return 'Rain';
-      if(code>=95) return 'Storm';
-      return 'Weather';
-    }
-    async function fetchOpenMeteo(){
-      try{
-        const r = await fetch(urlOpenMeteo, { mode: 'cors' });
-        if(!r.ok) throw new Error('open-meteo failed');
-        const data = await r.json();
-        const cw = data.current_weather || {};
-        const temp = cw.temperature;
-        const code = cw.weathercode ?? 0;
-        const desc = codeToDesc(code);
-        renderCard('Weather in Glasgow, Scotland', `${desc} • ${temp ?? ''}°C`);
-      } catch(e){
-        // Fallback to wttr.in
-        fetchWeatherWttrFallback();
+    (async function(){
+      const el = document.getElementById('weather-text');
+      try {
+        const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.8642&longitude=-4.2518&current_weather=true');
+        const j = await r.json();
+        const t = j.current_weather.temperature;
+        el.innerText = `Current Temp: ${t}°C (Glasgow)`;
+      } catch(e) {
+        el.innerText = 'Weather service temporarily unavailable.';
+        console.error(e);
       }
-    }
-    async function fetchWeatherWttrFallback(){
-      try{
-        const r = await fetch('https://wttr.in/Glasgow?format=j1', { mode: 'cors' });
-        if(!r.ok) throw new Error('wttr fallback failed');
-        const d = await r.json();
-        const curr = d.current_condition?.[0] || {};
-        const temp = curr.temp_C;
-        const desc = d.weather?.[0]?.hourly?.[0]?.weatherDesc?.[0]?.value || 'Weather';
-        renderCard('Weather in Glasgow, Scotland', `${desc} • ${temp}°C`);
-      } catch(err){
-        renderCard('Weather','Unable to load weather.');
-      }
-    }
-    fetchOpenMeteo();
-    setInterval(fetchOpenMeteo, 60 * 60 * 1000);
-  })();
+    })();
   </script>
 </body>
 </html>
