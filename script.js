@@ -1,12 +1,17 @@
-/* Glasgow Morning Feed weather widget (Open-Meteo-based) */
-(async function() {
+/* Glasgow Morning Feed weather widget (robust Open-Meteo with fallback) */
+(function(){
   const container = document.getElementById('feed');
-  if(!container){ return; }
+  if(!container) return;
+  function renderCard(title, text){
+    container.innerHTML = `<div class=\"card\"><h2>${title}</h2><p>${text}</p></div>`;
+  }
+  renderCard('Weather in Glasgow, Scotland','Loading weather...');
+
+  // Primary: Open-Meteo (current_weather)
   const lat = 55.864239;
   const lon = -4.251835;
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`;
-
-  function weatherCodeToDesc(code){
+  const urlOpenMeteo = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`;
+  function codeToDesc(code){
     if(code===0) return 'Clear';
     if(code===1) return 'Mainly Clear';
     if(code===2) return 'Partly Cloudy';
@@ -18,22 +23,35 @@
     if(code>=95) return 'Storm';
     return 'Weather';
   }
-
-  async function fetchWeather(){
+  async function fetchOpenMeteo(){
     try{
-      const r = await fetch(url);
-      if(!r.ok) throw new Error('Weather fetch failed');
+      const r = await fetch(urlOpenMeteo, { mode: 'cors' });
+      if(!r.ok) throw new Error('open-meteo failed');
       const data = await r.json();
       const cw = data.current_weather || {};
       const temp = cw.temperature;
       const code = cw.weathercode ?? 0;
-      const desc = weatherCodeToDesc(code);
-      container.innerHTML = `<div class="card"><h2>Weather in Glasgow, Scotland</h2><p>${desc} • ${temp ?? ''}°C</p></div>`;
+      const desc = codeToDesc(code);
+      renderCard('Weather in Glasgow, Scotland', `${desc} • ${temp ?? ''}°C`);
     } catch(e){
-      container.innerHTML = `<div class="card"><h2>Weather</h2><p>Unable to load weather.</p></div>`;
+      // Fallback to wttr.in JSON if Open-Meteo fails
+      fetchWeatherWttrFallback();
     }
   }
-  document.addEventListener('DOMContentLoaded', fetchWeather);
-  fetchWeather();
-  setInterval(fetchWeather, 60 * 60 * 1000);
+  async function fetchWeatherWttrFallback(){
+    try{
+      const r = await fetch('https://wttr.in/Glasgow?format=j1', { mode: 'cors' });
+      if(!r.ok) throw new Error('wttr fallback failed');
+      const d = await r.json();
+      const curr = d.current_condition?.[0] || {};
+      const temp = curr.temp_C;
+      const desc = d.weather?.[0]?.hourly?.[0]?.weatherDesc?.[0]?.value || 'Weather';
+      renderCard('Weather in Glasgow, Scotland', `${desc} • ${temp ?? ''}°C`);
+    } catch(err){
+      renderCard('Weather', 'Unable to load weather.');
+    }
+  }
+  fetchOpenMeteo();
+  // refresh hourly
+  setInterval(fetchOpenMeteo, 60 * 60 * 1000);
 })();
