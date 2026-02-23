@@ -3,66 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Glasgow Morning Feed</title>
-  <style>
-    :root{--bg:#0b1020;--fg:#e8e1ff;--card:#1a1f2e}
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:system-ui, -apple-system, sans-serif}
-    .container{max-width:800px;margin:40px auto;padding:20px}
-    .card{background:var(--card);border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
-  </style>
+  <title>Glasgow Weather Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div id="feed" class="container">
-    <div class="card">
-      <h2>Glasgow Feed</h2>
-      <p id="weather-text">Connecting to weather services...</p>
-    </div>
-    <hr style="border:0;border-top:1px solid #2a2f3e;margin:24px 0">
-    <h2 style="padding:0 12px">Latest AI Model Releases</h2>
-    <div id="ai-news">
-      <!-- AI_NEWS_START -->
-    <div class="card">
-      <small>2026-02-19 | Google</small>
-      <h3>Gemini 3.1 Pro</h3>
-      <a href="https://www.cnet.com/tech/services-and-software/google-announces-gemini-3-1-pro/" target="_blank" style="color:#a584ff;text-decoration:none">Read Announcement &rarr;</a>
-    </div>
-    <div class="card">
-      <small>2026-02-17 | Anthropic</small>
-      <h3>Claude Sonnet 4.6</h3>
-      <a href="https://theaiinsider.tech/2026/02/18/anthropic-launches-sonnet-4-6-ai-model-with-expanded-context-window-and-coding-improvements/" target="_blank" style="color:#a584ff;text-decoration:none">Read Announcement &rarr;</a>
-    </div>
-    <div class="card">
-      <small>2026-02-16 | Alibaba</small>
-      <h3>Qwen3.5-397B</h3>
-      <a href="https://llm-stats.com/llm-updates" target="_blank" style="color:#a584ff;text-decoration:none">Read Announcement &rarr;</a>
-    </div>
-    <div class="card">
-      <small>2026-02-11 | Zhipu AI</small>
-      <h3>GLM-5</h3>
-      <a href="https://llm-stats.com/llm-updates" target="_blank" style="color:#a584ff;text-decoration:none">Read Announcement &rarr;</a>
-    </div>
-    <div class="card">
-      <small>2026-02-05 | Anthropic</small>
-      <h3>Claude Opus 4.6</h3>
-      <a href="https://theaiinsider.tech/2026/02/18/anthropic-launches-sonnet-4-6-ai-model-with-expanded-context-window-and-coding-improvements/" target="_blank" style="color:#a584ff;text-decoration:none">Read Announcement &rarr;</a>
-    </div>
-    <!-- AI_NEWS_END -->
-    </div>
+<body class="dashboard">
+  <div class="overlay"></div>
+  <div class="container">
+    <header class="header">
+      <div class="location-box">
+        <h1 id="city-name">Glasgow</h1>
+        <p id="current-date"></p>
+      </div>
+      <div class="unit-toggle">
+        <span>°C</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <!-- Main Weather Card -->
+      <section class="card current-weather-card">
+        <div class="weather-maininfo">
+          <img id="main-icon" src="" alt="Weather Icon" class="weather-icon-large">
+          <div class="temp-box">
+            <span id="main-temp" class="temp">--</span><span class="degree">°</span>
+          </div>
+          <p id="weather-desc" class="description">Fetching weather...</p>
+        </div>
+        <div class="weather-details-row">
+          <div class="detail">
+            <span class="label">Wind</span>
+            <span id="wind-speed" class="val">-- km/h</span>
+          </div>
+          <div class="detail">
+            <span class="label">Humidity</span>
+            <span id="humidity" class="val">-- %</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Forecast Card -->
+      <section class="card forecast-card">
+        <h3>7-Day Forecast</h3>
+        <div id="forecast-list" class="forecast-list">
+          <!-- Forecast items injected here -->
+          <div class="loading">Loading forecast...</div>
+        </div>
+      </section>
+
+      <!-- News Card -->
+      <section class="card news-card">
+        <h3>AI Model Releases</h3>
+        <div id="ai-news" class="news-list scrollable">
+          <!-- AI_NEWS_START -->
+          <div class="news-item">
+            <div class="news-meta">2026-02-19 | Google</div>
+            <h4>Gemini 3.1 Pro</h4>
+            <a href="https://www.cnet.com/tech/services-and-software/google-announces-gemini-3-1-pro/" target="_blank">Read &rarr;</a>
+          </div>
+          <div class="news-item">
+            <div class="news-meta">2026-02-17 | Anthropic</div>
+            <h4>Claude Sonnet 4.6</h4>
+            <a href="https://theaiinsider.tech/2026/02/18/anthropic-launches-sonnet-4-6-ai-model-with-expanded-context-window-and-coding-improvements/" target="_blank">Read &rarr;</a>
+          </div>
+          <div class="news-item">
+            <div class="news-meta">2026-02-16 | Alibaba</div>
+            <h4>Qwen3.5-397B</h4>
+            <a href="https://llm-stats.com/llm-updates" target="_blank">Read &rarr;</a>
+          </div>
+          <div class="news-item">
+            <div class="news-meta">2026-02-11 | Zhipu AI</div>
+            <h4>GLM-5</h4>
+            <a href="https://llm-stats.com/llm-updates" target="_blank">Read &rarr;</a>
+          </div>
+          <div class="news-item">
+            <div class="news-meta">2026-02-05 | Anthropic</div>
+            <h4>Claude Opus 4.6</h4>
+            <a href="https://theaiinsider.tech/2026/02/18/anthropic-launches-sonnet-4-6-ai-model-with-expanded-context-window-and-coding-improvements/" target="_blank">Read &rarr;</a>
+          </div>
+          <!-- AI_NEWS_END -->
+        </div>
+      </section>
+    </main>
   </div>
-  <script>
-    (async function(){
-      const el = document.getElementById('weather-text');
-      try {
-        const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.8642&longitude=-4.2518&current_weather=true');
-        const j = await r.json();
-        const t = j.current_weather.temperature;
-        el.innerText = `Current Temp: ${t}°C (Glasgow)`;
-      } catch(e) {
-        el.innerText = 'Weather service temporarily unavailable.';
-        console.error(e);
-      }
-    })();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
