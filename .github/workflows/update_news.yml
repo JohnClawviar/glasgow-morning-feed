@@ -1,0 +1,31 @@
+name: "Daily AI Model Updates"
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Midnight daily
+  workflow_dispatch: # Manual trigger for testing
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update News
+        run: |
+          python3 update_news.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "AI Updates"
+          git config --global user.email "ai-updates@openclaw.ai"
+          git add index.html
+          git commit -m "update: latest AI models news $(date +'%Y-%m-%d')" || true
+          git push
