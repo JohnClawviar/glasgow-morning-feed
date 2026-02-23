@@ -10,27 +10,32 @@ from datetime import datetime, timedelta
 def get_hf_models():
     """Fetch trending models from Hugging Face"""
     try:
-        # Just get top trending models (no date filter to avoid API issues)
+        # Try downloading list without sort first to see available options
         response = requests.get(
             "https://huggingface.co/api/models",
-            params={
-                "sort": "trending", 
-                "limit": "5"
-            },
+            params={"limit": "30"},
             timeout=30
         )
         response.raise_for_status()
         models = response.json()
         
+        # Sort by downloads (trending proxy) since createdAt sorting isn't working
+        sorted_models = sorted(
+            models,
+            key=lambda x: x.get('downloads', 0),
+            reverse=True
+        )
+        
         results = []
-        for model in models[:5]:  # Top 5
-            created = model.get('createdAt', '')[:10]  # YYYY-MM-DD
-            # If no creation date, use recent placeholder
+        for model in sorted_models[:5]:
+            created = model.get('createdAt', '')[:10]
             if not created:
                 created = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
                 
             author = model.get('author', 'Unknown')
             model_id = model.get('id', '')
+            if not model_id:
+                continue
             name = model_id.split('/')[-1] if '/' in model_id else model_id
             
             results.append({
@@ -50,7 +55,7 @@ def get_github_trending():
         response = requests.get(
             "https://api.github.com/search/repositories",
             params={
-                "q": "topic:machine-learning OR topic:deep-learning OR topic:llm",
+                "q": "topic:machine-learning",
                 "sort": "updated",
                 "order": "desc",
                 "per_page": "5"
