@@ -18,14 +18,18 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install dependencies
+        run: |
+          pip install requests
+
       - name: Update News
         run: |
           python3 update_news.py
 
       - name: Commit and Push
         run: |
-          git config --global user.name "AI Updates"
+          git config --global user.name "AI Updates Bot"
           git config --global user.email "ai-updates@openclaw.ai"
           git add index.html
-          git commit -m "update: latest AI models news $(date +'%Y-%m-%d')" || true
+          git commit -m "[automated] AI model updates: $(date +'%Y-%m-%d')." || true
           git push
